@@ -1,4 +1,3 @@
-
 #include <hiduniversal.h>
 #include <usbhub.h>
 #include <avr/pgmspace.h>
@@ -18,7 +17,8 @@ String codeString;
 char z;
 int cont = 0;
 String readString;
-String host = "c1806453.ngrok.io";
+String host = "spvn.simplypost.asia";
+String port = "2000";
 
 HIDUniversal      Hid(&Usb);
 HIDBoot<USB_HID_PROTOCOL_KEYBOARD>    Keyboard(&Usb);
@@ -39,12 +39,11 @@ void KbdRptParser::OnKeyDown(uint8_t mod, uint8_t key)
 }
 
 void sendRequest(String barcode) {
-  ESP8266.println("AT+CIPSTART=0,\"TCP\",\"" + host + "\",80");
-  delay(50);
+  ESP8266.println("AT+CIPSTART=0,\"TCP\",\"" + host + "\"," + port + "");
+  delay(200);
   
   String cmd = "GET /?cage=5&orderRef=" + barcode + " HTTP/1.1\r\n";
-  cmd += "Host: " + host + "\r\n";
-  cmd += "Connection: keep-alive";
+  cmd += "Host: " + host;
   ESP8266.println("AT+CIPSEND=0," + String(cmd.length() + 4));
   delay(50);
   
@@ -52,12 +51,10 @@ void sendRequest(String barcode) {
   delay(50);
 
   ESP8266.println("");
-  delay(50);
 
   Serial.println("Sent Request");
 
   ESP8266.println("AT+CIPCLOSE=0");
-  delay(50);
 }
 
 void KbdRptParser::OnKeyPressed(uint8_t key)
@@ -86,10 +83,10 @@ void setup()
 
   ESP8266.println("AT+CWMODE=1");
   delay(1000);
-
+  
   ESP8266.println("AT+CWJAP=\"Dat09\",\"bananhquan\"");
   delay(10000);
-
+  
   ESP8266.println("AT+CIPMUX=1");
   delay(1000);
 
@@ -113,4 +110,3 @@ void printResponse() {
     Serial.println(ESP8266.readStringUntil('\n'));
   }
 }
-
