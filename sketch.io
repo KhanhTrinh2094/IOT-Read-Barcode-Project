@@ -13,12 +13,12 @@ const byte txPin = 6;
 
 SoftwareSerial ESP8266 (rxPin, txPin);
 USB     Usb;
-USBHub     Hub(&Usb); //I enable this line
+USBHub     Hub(&Usb);
 String codeString;
 char z;
 int cont = 0;
 String readString;
-String host = "930bbc8297.to.intercept.rest";
+String host = "c1806453.ngrok.io";
 
 HIDUniversal      Hid(&Usb);
 HIDBoot<USB_HID_PROTOCOL_KEYBOARD>    Keyboard(&Usb);
@@ -36,25 +36,30 @@ void KbdRptParser::OnKeyDown(uint8_t mod, uint8_t key)
   uint8_t c = OemToAscii(mod, key);
   if (c)
     OnKeyPressed(c);
-
 }
 
 void sendRequest(String barcode) {
+  ESP8266.println("AT+CIPSTART=0,\"TCP\",\"" + host + "\",80");
+  delay(50);
+  
   String cmd = "GET /?cage=5&orderRef=" + barcode + " HTTP/1.1\r\n";
   cmd += "Host: " + host + "\r\n";
   cmd += "Connection: keep-alive";
   ESP8266.println("AT+CIPSEND=0," + String(cmd.length() + 4));
-  delay(100);
-
+  delay(50);
+  
   ESP8266.println(cmd);
-  delay(100);
+  delay(50);
 
   ESP8266.println("");
+  delay(50);
 
   Serial.println("Sent Request");
+
+  ESP8266.println("AT+CIPCLOSE=0");
+  delay(50);
 }
 
-/* what to do when symbol arrives */
 void KbdRptParser::OnKeyPressed(uint8_t key)
 {
   z = ((char)key);
@@ -79,30 +84,15 @@ void setup()
   ESP8266.begin(115200);
   delay(2000);
 
-  //    ESP8266.println("AT");
-  //    delay(1000);
-  //  printResponse();
-  //    ESP8266.println("AT+CWMODE=1");
-  //    delay(1000);
-  //  printResponse();
-  //    ESP8266.println("AT+CWJAP=\"Dat09\",\"bananhquan\"");
-  //    delay(10000);
-  //  printResponse();
-  //    ESP8266.println("AT+CIPMUX=1");
-  //    delay(1000);
-  //  printResponse();
-
-  //  ESP8266.println("AT+CIPCLOSE=4");
-  //  delay(1000);
-
-  ESP8266.println("AT+CIPSTART=0,\"TCP\",\"" + host + "\",80");
+  ESP8266.println("AT+CWMODE=1");
   delay(1000);
 
-  printResponse();
+  ESP8266.println("AT+CWJAP=\"Dat09\",\"bananhquan\"");
+  delay(10000);
 
-  //  ESP8266.println("AT+HTTPSSL=1");
-  //  delay(1000);
-  //  printResponse();
+  ESP8266.println("AT+CIPMUX=1");
+  delay(1000);
+
   Serial.println("Start");
 
   if (Usb.Init() == -1) {
